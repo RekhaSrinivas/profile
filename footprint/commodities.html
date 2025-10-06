@@ -168,7 +168,7 @@ async function main() {
     }
     
     // Now initialize the main table with the tableData
-    displayTable(navigator.language, "simple");
+    displayTable(getCurrentLocale(), getCurrentNumberFormat());
     
   } catch (error) {
     console.error("Error in main():", error.stack);
@@ -229,9 +229,12 @@ function displayTable(locale, formatType) {
           return new Intl.NumberFormat(navigator.language).format(value);
         } else if (formatType === "scientific") {
           let scientificValue = Number(value).toExponential(1);
-          let parts = scientificValue.split("e+");
+          let parts = scientificValue.split("e");
           let base = parts[0];
-          let exponent = parts[1];
+          let exponent = parseInt(parts[1]);
+          if (exponent === 0) {
+            return base;
+          }
           return `${base}&times;10<sup>${exponent}</sup>`;
         }
         return value;
@@ -258,9 +261,12 @@ function displayTable(locale, formatType) {
           return new Intl.NumberFormat(locale).format(value);
         } else if (formatType === "scientific") {
           let scientificValue = Number(value).toExponential(1);
-          let parts = scientificValue.split("e+");
+          let parts = scientificValue.split("e");
           let base = parts[0];
-          let exponent = parts[1];
+          let exponent = parseInt(parts[1]);
+          if (exponent === 0) {
+            return base;
+          }
           return `${base}&times;10<sup>${exponent}</sup>`;
         }
         return value;
@@ -287,9 +293,12 @@ function displayTable(locale, formatType) {
           return new Intl.NumberFormat(locale).format(value);
         } else if (formatType === "scientific") {
           let scientificValue = Number(value).toExponential(1);
-          let parts = scientificValue.split("e+");
+          let parts = scientificValue.split("e");
           let base = parts[0];
-          let exponent = parts[1];
+          let exponent = parseInt(parts[1]);
+          if (exponent === 0) {
+            return base;
+          }
           return `${base}&times;10<sup>${exponent}</sup>`;
         }
         return value;
@@ -320,9 +329,12 @@ function displayTable(locale, formatType) {
           return new Intl.NumberFormat(locale).format(value);
         } else if (formatType === "scientific") {
           let scientificValue = Number(value).toExponential(1);
-          let parts = scientificValue.split("e+");
+          let parts = scientificValue.split("e");
           let base = parts[0];
-          let exponent = parts[1];
+          let exponent = parseInt(parts[1]);
+          if (exponent === 0) {
+            return base;
+          }
           return `${base}&times;10<sup>${exponent}</sup>`;
         }
         return value;
@@ -421,7 +433,7 @@ Whereas the US model is based on the detail <a href="https://apps.bea.gov/iTable
 </div>
 
 <script>
-  // Populate the locale dropdown
+// Populate the locale dropdown
 var localeSelect = document.getElementById("locale-select");
 var locales = ["en-US", "fr-FR", "de-DE", "es-ES", "it-IT", "ja-JP", "ko-KR", "zh-CN"];
 
@@ -432,15 +444,7 @@ locales.forEach(locale => {
     localeSelect.appendChild(option);
 });
 
-// Set the dropdown to the user's current locale
-localeSelect.value = navigator.language;
-
-// Add event listener to update table when locale is changed
-localeSelect.addEventListener("change", function() {
-    updateTable(this.value);
-});
-
-// for selecting the number format
+// Populate the number format dropdown
 let numberFormatToggle = document.getElementById("number-format-select");
 let formats = ["simple", "full", "scientific"];
 formats.forEach(format => {
@@ -450,11 +454,22 @@ formats.forEach(format => {
     numberFormatToggle.appendChild(option);
 });
 
-// Add event listener to update table when number format is changed
-numberFormatToggle.addEventListener("change", function() {
-    // // Convert the selected format to a boolean
-    // let isSimpleFormat = this.value === "simple";
-    displayTable(navigator.language, this.value);
+// Apply cached preferences and add listeners after population
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply cached preferences from config.js
+    applyCachedPreferences();
+    
+    // Add commodities-specific event listeners
+    localeSelect.addEventListener("change", function() {
+        updateTable(this.value);
+    });
+
+    numberFormatToggle.addEventListener("change", function() {
+        displayTable(getCurrentLocale(), this.value);
+    });
+
+    // Trigger initial display with cached values
+    displayTable(getCurrentLocale(), getCurrentNumberFormat());
 });
 
 </script>

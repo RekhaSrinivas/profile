@@ -47,11 +47,91 @@ function getModel() {
     });
 }
 
-// Common dropdown functionality for locale and number format
-function initializeDropdowns() {
-  // Populate the locale dropdown
-  var localeSelect = document.getElementById("locale-select");
+// Browser cache functionality for dropdown preferences
+const CACHE_KEYS = {
+  impactFilter: 'footprint_impact_filter_preference',
+  locale: 'footprint_locale_preference',
+  numberFormat: 'footprint_number_format_preference'
+};
+
+// Save dropdown selection to browser cache
+function saveDropdownPreference(dropdownId, value) {
+  try {
+    localStorage.setItem(CACHE_KEYS[dropdownId], value);
+  } catch (e) {
+    console.warn('Failed to save dropdown preference:', e);
+  }
+}
+
+// Get dropdown selection from browser cache
+function getDropdownPreference(dropdownId, defaultValue) {
+  try {
+    return localStorage.getItem(CACHE_KEYS[dropdownId]) || defaultValue;
+  } catch (e) {
+    console.warn('Failed to get dropdown preference:', e);
+    return defaultValue;
+  }
+}
+
+// Add event listeners to save preferences when dropdowns change
+function attachDropdownListeners() {
+  // Impact filter dropdown (only on sector_profile.html)
+  const impactFilterSelect = document.getElementById("impact-filter-select");
+  if (impactFilterSelect) {
+    impactFilterSelect.addEventListener('change', function() {
+      saveDropdownPreference('impactFilter', this.value);
+    });
+  }
+
+  // Locale dropdown
+  const localeSelect = document.getElementById("locale-select");
   if (localeSelect) {
+    localeSelect.addEventListener('change', function() {
+      saveDropdownPreference('locale', this.value);
+    });
+  }
+
+  // Number format dropdown
+  const numberFormatSelect = document.getElementById("number-format-select");
+  if (numberFormatSelect) {
+    numberFormatSelect.addEventListener('change', function() {
+      saveDropdownPreference('numberFormat', this.value);
+    });
+  }
+}
+
+// Apply cached preferences to existing dropdowns (doesn't populate them)
+function applyCachedPreferences() {
+  // Set locale dropdown to cached preference
+  var localeSelect = document.getElementById("locale-select");
+  if (localeSelect && localeSelect.options.length > 0) {
+    const cachedLocale = getDropdownPreference('locale', navigator.language);
+    localeSelect.value = cachedLocale;
+  }
+
+  // Set number format dropdown to cached preference
+  let numberFormatSelect = document.getElementById("number-format-select");
+  if (numberFormatSelect && numberFormatSelect.options.length > 0) {
+    const cachedFormat = getDropdownPreference('numberFormat', 'simple');
+    numberFormatSelect.value = cachedFormat;
+  }
+
+  // Set impact filter preference (only on sector_profile.html)
+  const impactFilterSelect = document.getElementById("impact-filter-select");
+  if (impactFilterSelect && impactFilterSelect.options.length > 0) {
+    const cachedImpactFilter = getDropdownPreference('impactFilter', 'all');
+    impactFilterSelect.value = cachedImpactFilter;
+  }
+
+  // Attach event listeners after setting values
+  attachDropdownListeners();
+}
+
+// Legacy function for sector_profile.html compatibility
+function initializeDropdowns() {
+  // Only populate dropdowns if they're empty (for sector_profile.html)
+  var localeSelect = document.getElementById("locale-select");
+  if (localeSelect && localeSelect.options.length === 0) {
     var locales = ["en-US", "fr-FR", "de-DE", "es-ES", "it-IT", "ja-JP", "ko-KR", "zh-CN"];
     
     locales.forEach(locale => {
@@ -60,14 +140,10 @@ function initializeDropdowns() {
         option.textContent = locale;
         localeSelect.appendChild(option);
     });
-    
-    // Set the dropdown to the user's current locale
-    localeSelect.value = navigator.language;
   }
 
-  // Populate the number format dropdown
   let numberFormatSelect = document.getElementById("number-format-select");
-  if (numberFormatSelect) {
+  if (numberFormatSelect && numberFormatSelect.options.length === 0) {
     let formats = ["simple", "full", "scientific"];
     formats.forEach(format => {
         let option = document.createElement("option");
@@ -75,10 +151,10 @@ function initializeDropdowns() {
         option.textContent = format;
         numberFormatSelect.appendChild(option);
     });
-    
-    // Set default to simple
-    numberFormatSelect.value = "simple";
   }
+
+  // Apply cached preferences after population
+  applyCachedPreferences();
 }
 
 // Number formatting function based on format type
@@ -173,3 +249,31 @@ function getUrlHash() {
     return result;
   })(window.location.hash.substr(1).split('&'));
 }
+
+// Initialize dropdowns when DOM is ready (for sector_profile.html)
+function initDropdownsOnDOMReady() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if dropdowns exist and are empty (sector_profile.html case)
+      const localeSelect = document.getElementById("locale-select");
+      const numberFormatSelect = document.getElementById("number-format-select");
+      
+      if ((localeSelect && localeSelect.options.length === 0) || 
+          (numberFormatSelect && numberFormatSelect.options.length === 0)) {
+        initializeDropdowns();
+      }
+    });
+  } else {
+    // DOM is already ready
+    const localeSelect = document.getElementById("locale-select");
+    const numberFormatSelect = document.getElementById("number-format-select");
+    
+    if ((localeSelect && localeSelect.options.length === 0) || 
+        (numberFormatSelect && numberFormatSelect.options.length === 0)) {
+      initializeDropdowns();
+    }
+  }
+}
+
+// Auto-initialize when this script loads
+initDropdownsOnDOMReady();
