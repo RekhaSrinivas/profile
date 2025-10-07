@@ -6,11 +6,88 @@ let aggregateProfile = {};
 let searchResults = []; // Store current search results
 let hasSampleItem = false; // Track if sample item is present
 
-document.addEventListener('DOMContentLoaded', function() {
-    addUSDASearchBar();
-    loadSampleFood();
-    displayInitialFoodItems();
-});
+document.addEventListener("DOMContentLoaded", loadMenu);
+
+function loadMenu() {
+    let hash = getUrlHash();
+
+    const searchDiv = document.getElementById("usda-search-div");
+    const searchResultsContainer = document.getElementById("search-results-container");
+    const menuContainer = document.getElementById("menu-container");
+    const header = document.getElementById("page-header");
+
+    if (hash.layout == "product") {
+        header.textContent = "Product Layout";
+        searchDiv.style.display = "none";
+        searchResultsContainer.style.display = "none";
+        menuContainer.style.display = "none";
+        loadProductList();
+    } else {
+        addUSDASearchBar();
+        loadSampleFood();
+        displayInitialFoodItems();
+    }
+}
+
+function loadProductList() {
+    const csvUrl = "https://raw.githubusercontent.com/Sirishaupadhyayula/products-data/refs/heads/main/IN.csv";
+    const container = document.getElementById("product-container");
+
+    if (container) {
+        container.innerHTML = "<h3>Loading products...</h3>";
+
+        fetch(csvUrl)
+            .then(response => response.text())
+            .then(csvText => {
+                const lines = csvText.split("\n");
+                const headers = parseCSVLine(lines[0]);
+
+                container.innerHTML = "<h3>Product List:</h3>";
+
+                const table = document.createElement("table");
+                table.style.width = "100%";
+                table.style.borderCollapse = "collapse";
+
+                const headerRow = document.createElement("tr");
+                headers.forEach(header => {
+                    const th = document.createElement("th");
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim()) {
+                        const values = parseCSVLine(lines[i]);
+                        const row = document.createElement("tr");
+
+                        values.forEach(value => {
+                            const td = document.createElement("td");
+                            td.textContent = value;
+                            row.appendChild(td);
+                        });
+
+                        table.appendChild(row);
+                    }
+                }
+
+                container.appendChild(table);
+            })
+            .catch(error => {
+                console.log("Error fetching products CSV:", error);
+                container.innerHTML = "<p>Error loading products. Please try again later.</p>";
+            });
+    }
+}
+
+function parseCSVLine(line) {
+    // This regex splits on commas not inside quotes
+    const regex = /,(?=(?:[^"]*"[^"]*")*[^"]*$)/;
+    return line.split(regex).map(field => {
+        // Remove surrounding quotes and trim whitespace
+        return field.replace(/^"(.*)"$/, '$1').trim();
+    });
+}
 
 function loadSampleFood() {
     // Add a sample food item (apple) to show the user how it works
