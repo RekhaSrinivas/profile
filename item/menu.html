@@ -14,6 +14,14 @@
 
 <link type="text/css" rel="stylesheet" href="css/label.css" />
 <script type="text/javascript" src="js/label.js"></script>
+<script>
+document.addEventListener('hashChangeEvent', hashChangedMenu, false);
+function hashChangedMenu() {
+  console.log("Profile hash changed");
+  loadMenu();
+}
+loadMenu();
+</script>
 
 <style>
 .aggregate {
@@ -45,12 +53,15 @@ loadMarkdown("README.md", "readmeDiv", "_parent");
 <div class="content contentpadding large-list" style="max-width: 1500px;">
   <p><a href="index.html">Back</a></p>
 
-  <h1>Nutritious Meal Planner</h1>
+  <p>Toggle between <a href="">Nutrition Layout</a> and <a href="#layout=product">Product Layout</a></p>
+
+  <h1 id="page-header">Nutritious Meal Planner</h1>
 
   <div style="overflow: auto;">
     <div id="usda-search-div"></div>
     <div id="search-results-container"></div>
     <div id="menu-container"></div>
+    <div id="product-container"></div>
   </div>
 
 </div>
