@@ -11,6 +11,7 @@
 
 <script>
 loadMarkdown("README.md", "readmeDiv", "_parent");
+loadText("../../../impacts/useeio/create-database-useeio.yaml", "yamlDiv", "_parent");
 
 document.addEventListener('hashChangeEvent', function (elem) {
   console.log("SQL page detects URL hashChangeEvent");
@@ -24,6 +25,15 @@ document.addEventListener('hashChangeEvent', function (elem) {
 <body>
 <div class="content contentpadding large-list">
   <div id="readmeDiv"></div>
+
+  <h3>YAML for SQL table names</h3>
+
+  Not in use, outputting to <a href="../../exiobase/tradeflow">.csv files</a> instead.<br>
+  See overview of trade data pulls at <a href="/profile/trade/">profile/trade</a>.
+  <pre class="yamlPre">
+  <div id="yamlDiv"></div>
+  </pre>
+
 </div>
 </body>
 </html>
