@@ -1605,3 +1605,5 @@ EOF
     echo "    - Apache logs: $APACHE_PATH/logs/"
     echo "    - MariaDB logs: Check Windows Event Viewer"
 fi
+# Output blank line to help see where command completed
+echo
