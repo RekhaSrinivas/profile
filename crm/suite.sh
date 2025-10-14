@@ -1591,7 +1591,7 @@ EOF
         echo "⚠️ PowerShell not found. Please manually add a firewall rule for port 80."
     fi
 
-    echo "✅ Windows setup completed successfully! [$(date +'%a, %b %-d at %-I:%M %p ET')]"
+    echo "✅ Windows setup completed successfully! - $(date +'%A, %b %-d at %-I:%M %p ET')"
     echo "📝 You can now complete the installation of your CRM from the web browser using: http://$server_ip"
     echo "👉 Health check URL: http://$server_ip/health.php"
     echo "⚠️ SECURITY REMINDER: Run 'mysql_secure_installation' to secure your MariaDB installation."
