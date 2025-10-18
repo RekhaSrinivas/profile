@@ -37,9 +37,6 @@ commodities (6-char products)
 commodity\_factor  
 
 
-For Exiobase processing into SQL, we're using Spark on a linux VM to avoid higher expenses using Databricks. Spark is the data processing program that databricks provides, but since you can't control the costs, for now it's best to use directly on linux to be safe.  [Private doc](https://docs.google.com/document/d/1gNsPJmC8_Et3dwd1Kgg0weOSbFC3vPQ3E-S9M_ttg2k/edit?usp=sharing) and [.env for testing](https://colab.research.google.com/drive/1TgA9FJzhhue74Bgf-MJoOAKSBrzpiyss?usp=sharing)
-
-
 Also see [Open CEDA](https://watershed.com/solutions/ceda)
 
 [Stanford's Cornerstone Sustainability Data Initiative](https://cornerstonedata.org) - Collaboration on USEEIO and Open CEDA, the world’s two most widely used models for Scope 3 (value chain) carbon accounting and policy research. [GitHub](https://github.com/cornerstone-data)
@@ -68,6 +65,8 @@ The [useeio_internal_concordance.csv](https://github.com/ModelEarth/USEEIO/blob/
 [Trade Impact Colabs](../impacts/json) - Deploys Exiobase international data to GitHub as JSON
 [Global Trade - our Comtrade and Exobase API data pulls](../../global-trade)
 [Try MARIO Input-Output library](https://mario-suite.readthedocs.io/en/latest/intro.html) as a striped-down [Pymyrio](https://pymrio.readthedocs.io/en/latest/intro.html)
+
+For Exiobase processing directly into SQL, Gary experimented with Spark on a linux VM to avoid higher expenses using Databricks. Spark is the data processing program that databricks provides, but since you can't control the costs, for now it's best to use directly on linux to be safe.  [Private doc](https://docs.google.com/document/d/1gNsPJmC8_Et3dwd1Kgg0weOSbFC3vPQ3E-S9M_ttg2k/edit?usp=sharing) and [.env for testing](https://colab.research.google.com/drive/1TgA9FJzhhue74Bgf-MJoOAKSBrzpiyss?usp=sharing)
 
 <b>Exiobase International Trade Data</b>
 Our IO Team has been generating [JSON](../impacts/json/), <a href="/profile/prep/sql/duckdb/">DuckDB Parquet</a> and <a href="/profile/prep/sql/supabase/">Supabase database inserts</a> for comparing industries and identifying imports with positive environmental impacts using [a Javascript frontend](../impacts/).
