@@ -14,7 +14,6 @@
 loadMarkdown("nav.md", "navDiv", "_parent");
 loadMarkdown("README.md", "readmeDiv", "_parent");
 loadMarkdown("rightside.md", "rightsideDiv", "_parent");
-loadText("../impacts/exiobase/US-source/create-database-direct.yaml", "yamlDiv", "_parent");
 loadMarkdown("/localsite/start/steps/github-push.md", "pushGithubDiv", "_parent");
 </script>
 
@@ -43,86 +42,6 @@ loadMarkdown("/localsite/start/steps/github-push.md", "pushGithubDiv", "_parent"
 <div style="clear:both"></div>
 
 
-
-<div id="schemaDiv"></div>
-
-<h3>YAML for SQL table names</h3>
-
-The following YAML for the SQL insert resides at <a href="https://github.com/ModelEarth/profile/blob/main/impacts/exiobase/US-source/">profile/impacts/exibase/US-source</a><br>
-Yaml-2-SQL table python from <a href="https://chatgpt.com/share/3a89cc73-c839-4592-bc6e-e82a6a8e400b">From ChatGPT</a> which resides in the textarea below.<br>A version of the following resides in our <a href="https://github.com/ModelEarth/USEEIO/tree/master/import_emission_factors">generate_import_factors.py</a> which we are replacing with a direct pull from the Exiobase API.<br><br>
-
-The previous Exiobase CSV file exports pulled by the US EPA code reside in <a href="
-https://github.com/ModelEarth/profile/tree/main/impacts/exiobase/US-source">impacts/exiobase/US-source</a>. Initilly the following was created to use yaml to rename CSV columns when pulling into Supabase. We are aiming to avoid using the US EPA csv files with a new version of the Exiobase pull that works for all countries.
-
-<textarea style="height:100px;width:100%">
-import yaml
-import pandas as pd
-import sqlalchemy
-from sqlalchemy import create_engine, Table, MetaData
-
-# Load the YAML file
-with open('create-database.yaml', 'r') as file:
-    config = yaml.safe_load(file)
-
-# Create SQL Alchemy Engine
-engine = create_engine('sqlite:///example.db')
-metadata = MetaData()
-
-# Function to convert column names to CamelCase without underscores
-def to_camel_case(snake_str):
-    components = snake_str.split('_')
-    return components[0].capitalize() + ''.join(x.title() for x in components[1:])
-
-# Process each table in the YAML configuration
-for table_name, table_config in config.items():
-    csv_file = table_config['source']
-    df = pd.read_csv(csv_file)
-
-    columns_map = table_config.get('columns', {})
-    omit_columns = table_config.get('omit', [])
-
-    # Drop omitted columns
-    df.drop(columns=omit_columns, errors='ignore', inplace=True)
-
-    # Rename columns as per the YAML configuration
-    df.rename(columns=columns_map, inplace=True)
-
-    # Generate new column names for remaining columns
-    new_columns = {}
-    for col in df.columns:
-        if col not in columns_map.values():
-            new_columns[col] = to_camel_case(col)
-    df.rename(columns=new_columns, inplace=True)
-
-    # Exclude 'Year' column if not explicitly included in columns_map
-    if 'Year' not in columns_map.values() and 'Year' in df.columns:
-        df.drop(columns=['Year'], inplace=True)
-
-    # Append "US" to the table name
-    table_name = table_name + "US"
-
-    # Insert/Update the data into the database
-    if engine.dialect.has_table(engine, table_name):
-        # Update existing table
-        temp_table_name = table_name + "_temp"
-        df.to_sql(temp_table_name, engine, if_exists='replace', index=False)
-        with engine.connect() as conn:
-            conn.execute(f"""
-                INSERT OR REPLACE INTO {table_name}
-                SELECT * FROM {temp_table_name}
-            """)
-            conn.execute(f"DROP TABLE {temp_table_name}")
-    else:
-        # Create and insert new table
-        df.to_sql(table_name, engine, if_exists='replace', index=False)
-</textarea><br><br>
-
-
-To reduce the size of our resulting SQL databases, the large FlowUUID values will be replaced with FactorID, a 1-based index relating the Factor table to 4 or more tables.
-
-<pre class="yamlPre">
-<div id="yamlDiv"></div>
-</pre><br>
 Our <a href="https://colab.research.google.com/drive/1BQZZ5EZTFr422_SUH7iAQ7uuwsM1KUYj#scrollTo=DXUJfJENmzxu">Exiobase To Github Pipeline</a> pushes to Github using these steps...
 
 <div id="pushGithubDiv"></div>

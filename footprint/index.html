@@ -463,7 +463,6 @@
             border-left: 4px solid #0066cc;
             border-radius: 5px;
             display: none; /* Initially hidden */
-            overflow: auto;
         }
         
         .industry-filter-row {
@@ -509,6 +508,41 @@
             margin-bottom: 0px;
         }
         
+        .industry-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .industry-input-row .industry-dropdown {
+            flex: 1;
+        }
+        
+        .clear-categories-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            background-color: #e6f3ff;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: #0066cc;
+            flex-shrink: 0;
+        }
+        
+        .clear-categories-btn.show {
+            display: flex; /* Show when categories are selected */
+        }
+        
+        .clear-categories-btn:hover {
+            background-color: #cce7ff;
+            color: #004499;
+        }
+        
         .category-button {
             background-color: #e6f3ff;
             display: flex;
@@ -521,14 +555,14 @@
             position: absolute;
             top: 100%;
             left: 0;
-            right: 0;
+            width: 600px; /* Twice as wide */
             background: white;
             border: 1px solid #0066cc;
             border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
             display: none;
-            max-height: 300px;
+            max-height: calc(100vh - 120px); /* Height extends close to bottom of browser */
             overflow-y: auto;
         }
         
@@ -584,6 +618,17 @@
             background-color: #555;
             color: #fff;
             border-color: #888;
+        }
+        
+        .dark .clear-categories-btn {
+            background-color: #555;
+            color: #fff;
+            border-color: #888;
+        }
+        
+        .dark .clear-categories-btn:hover {
+            background-color: #666;
+            color: #fff;
         }
         
         .dark .category-item {
@@ -650,107 +695,114 @@
         <div id="navDiv"></div>
         </div>
 
-        <!-- Data Source Toggle -->
-        <div class="toggle-data-container">
-            <div class="toggle-options">
-                <label>
-                    <input type="radio" name="dataSource" value="international" checked> Countries
-                </label>
-                <label>
-                    <input type="radio" name="dataSource" value="us"> US States
-                </label>
-                <label>
-                    <input type="radio" name="dataSource" value="combined"> Combined
-                </label>
+        <div style="overflow:auto">
+            <!-- Data Source Toggle -->
+            <div class="toggle-data-container">
+                <div class="toggle-options">
+                    <label>
+                        <input type="radio" name="dataSource" value="international" checked> Countries
+                    </label>
+                    <label>
+                        <input type="radio" name="dataSource" value="us"> US States
+                    </label>
+                    <label>
+                        <input type="radio" name="dataSource" value="combined"> Combined
+                    </label>
+                </div>
+                <a href="https://github.com/ModelEarth/exiobase/tree/main/tradeflow" class="github-link" target="trade_github">
+                    <img src="../../localsite/img/icon/github/github.png" alt="Exiobase Tradeflow Repository">
+                </a>
             </div>
-            <a href="https://github.com/ModelEarth/exiobase/tree/main/tradeflow" class="github-link" target="trade_github">
-                <img src="../../localsite/img/icon/github/github.png" alt="Exiobase Tradeflow Repository">
-            </a>
-        </div>
-        
-        <!-- File Selection Dropdown (for specific countries) -->
-        <div id="fileSelectionContainer" class="file-selection-container" style="display: none;">
-            <div class="selector-row">
-                <div class="selector-group">
-                    <label for="tradeTypeSelector"><strong>Trade Type:</strong></label>
-                    <select id="tradeTypeSelector" class="trade-type-selector">
-                        <option value="domestic">Domestic Trade</option>
-                        <option value="imports">Imports</option>
-                        <option value="exports">Exports</option>
-                    </select>
-                </div>
-                <div class="selector-group">
-                    <label for="fileSelector"><strong>Data File:</strong></label>
-                    <select id="fileSelector" class="file-selector">
-                        <option value="trade_impact.csv">Environmental Impacts (trade_impact.csv)</option>
-                        <option value="trade_employment.csv">Employment Data (trade_employment.csv)</option>
-                        <option value="trade_factor.csv">Environmental Factors (trade_factor.csv)</option>
-                        <option value="trade_material.csv">Material Flows (trade_material.csv)</option>
-                        <option value="trade_resource.csv">Resource Usage (trade_resource.csv)</option>
-                        <option value="trade.csv">Industry Flow Data (trade.csv)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Industry Filter Section -->
-        <div id="industryFilterContainer" class="industry-filter-container">
-            <div class="industry-filter-row">
-                <div class="industry-filter-group">
-                    <label for="industryCategory"><strong>Categories:</strong></label>
-                    <div class="category-button" id="industrycat">
-                        <span id="categoryDisplay">All Categories</span>
-                        <i class="ph ph-caret-down"></i>
-                    </div>
-                    <div id="categoryPopup" class="category-popup">
-                        <!-- Categories will be loaded dynamically -->
-                    </div>
-                </div>
-                <div class="industry-filter-group">
-                    <label for="industry"><strong>Industry:</strong></label>
-                    <select id="industry" class="industry-dropdown">
-                        <option value="all">All Industries</option>
-                        <!-- Industries will be loaded dynamically -->
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Data Information Display -->
-        <div class="data-info">
             
-
-        </div>
-        
-        <!-- Totals Summary -->
-        <div id="totalsContainer" class="totals">
-            <div class="data-info-content">
-                <div>
-                    <h3><span id="currentYear"></span> Summary Totals</h3>
-                    <span id="dataDescription">US state-level economic output and employment data</span>
+            <!-- File Selection Dropdown (for specific countries) -->
+            <div id="fileSelectionContainer" class="file-selection-container" style="display: none;">
+                <div class="selector-row">
+                    <div class="selector-group">
+                        <label for="tradeTypeSelector"><strong>Trade Type:</strong></label>
+                        <select id="tradeTypeSelector" class="trade-type-selector">
+                            <option value="domestic">Domestic Trade</option>
+                            <option value="imports">Imports</option>
+                            <option value="exports">Exports</option>
+                        </select>
+                    </div>
+                    <div class="selector-group">
+                        <label for="fileSelector"><strong>Data File:</strong></label>
+                        <select id="fileSelector" class="file-selector">
+                            <option value="trade_impact.csv">Environmental Impacts (trade_impact.csv)</option>
+                            <option value="trade_employment.csv">Employment Data (trade_employment.csv)</option>
+                            <option value="trade_factor.csv">Environmental Factors (trade_factor.csv)</option>
+                            <option value="trade_material.csv">Material Flows (trade_material.csv)</option>
+                            <option value="trade_resource.csv">Resource Usage (trade_resource.csv)</option>
+                            <option value="trade.csv">Industry Flow Data (trade.csv)</option>
+                        </select>
+                    </div>
                 </div>
-                <select id="yearSelector" class="year-selector">
-                    <option value="2019">2019</option>
-                    <option value="2022" selected>2022</option>
-                </select>
             </div>
-            <div id="totalsContent">
-                <div id="loadingTotals" class="loading">Loading totals...</div>
-                <div id="totalsDisplay" style="display: none;">
-                    <strong>Total Output:</strong> <span id="totalOutput">$0</span><br>
-                    <strong>Total Employment:</strong> <span id="totalEmployment">0</span><br>
-                    <strong>Regions/Countries:</strong> <span id="totalRegions">0</span>
+
+            <!-- Industry Filter Section -->
+            <div id="industryFilterContainer" class="industry-filter-container">
+                <div class="industry-filter-row">
+                    <div class="industry-filter-group">
+                        <label for="industryCategory"><strong>Categories:</strong></label>
+                        <div class="category-button" id="industrycat">
+                            <span id="categoryDisplay">All Categories</span>
+                            <i class="ph ph-caret-down"></i>
+                        </div>
+                        <div id="categoryPopup" class="category-popup">
+                            <!-- Categories will be loaded dynamically -->
+                        </div>
+                    </div>
+                    <div class="industry-filter-group">
+                        <label for="industry"><strong>Industry:</strong></label>
+                        <div class="industry-input-row">
+                            <select id="industry" class="industry-dropdown">
+                                <option value="all">All Industries</option>
+                                <!-- Industries will be loaded dynamically -->
+                            </select>
+                            <button id="clearCategoriesBtn" class="clear-categories-btn" title="Clear category selections">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Main Data Table -->
-        <div id="loadingMessage" class="loading">Loading data...</div>
-        <div id="table"></div>
+            
+            <!-- Data Information Display -->
+            <div class="data-info">
+                
 
-        <!-- Data Sources Display -->
-        <div id="dataSourcesContainer" style="display: none;">
-            <div class="data-sources" id="dataSourcesPaths"></div>
+            </div>
+            
+            <!-- Totals Summary -->
+            <div id="totalsContainer" class="totals">
+                <div class="data-info-content">
+                    <div>
+                        <h3><span id="currentYear"></span> Summary Totals</h3>
+                        <span id="dataDescription">US state-level economic output and employment data</span>
+                    </div>
+                    <select id="yearSelector" class="year-selector">
+                        <option value="2019">2019</option>
+                        <option value="2022" selected>2022</option>
+                    </select>
+                </div>
+                <div id="totalsContent">
+                    <div id="loadingTotals" class="loading">Loading totals...</div>
+                    <div id="totalsDisplay" style="display: none;">
+                        <strong>Total Output:</strong> <span id="totalOutput">$0</span><br>
+                        <strong>Total Employment:</strong> <span id="totalEmployment">0</span><br>
+                        <strong>Regions/Countries:</strong> <span id="totalRegions">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Data Table -->
+            <div id="loadingMessage" class="loading">Loading data...</div>
+            <div id="table"></div>
+
+            <!-- Data Sources Display -->
+            <div id="dataSourcesContainer" style="display: none;">
+                <div class="data-sources" id="dataSourcesPaths"></div>
+            </div>
         </div>
     </div>
 
@@ -775,6 +827,12 @@
         let useLocalUseeio = null; // null = not checked, true = local, false = github
         let useeioSourceMessageShown = false;
         
+        document.addEventListener('hashChangeEvent', function (elem) {
+            console.log("profile/footprint detects URL hashChangeEvent");
+            // Refresh category display and clear button visibility when hash changes
+            handleCategoryChange();
+        }, false);
+
         // Get selected year from dropdown
         function getSelectedYear() {
             const yearSelector = document.getElementById('yearSelector');
@@ -818,8 +876,8 @@
             const popup = document.getElementById('categoryPopup');
             
             // Get unique categories
-            const categories = [...new Set(industriesData.map(row => row.category))]
-                .filter(cat => cat && cat.trim() !== '')
+            const categories = [...new Set(industriesData.map(row => row.category && row.category.trim()))]
+                .filter(cat => cat && cat !== '')
                 .sort();
             
             popup.innerHTML = '';
@@ -895,14 +953,35 @@
                 selectedCategories.push(cb.value);
             });
             
+            // Check if categories exist in hash using getHash() from localsite.js
+            let hashCategories = [];
+            if (typeof getHash === 'function') {
+                const hash = getHash();
+                if (hash.categories) {
+                    hashCategories = hash.categories.split(',');
+                }
+            }
+            
             // Update category display
             const categoryDisplay = document.getElementById('categoryDisplay');
+            const clearBtn = document.getElementById('clearCategoriesBtn');
+            
+            // Show clear button if categories are selected OR exist in hash
+            const hasCategories = selectedCategories.length > 0 || hashCategories.length > 0;
+            
             if (selectedCategories.length === 0) {
                 categoryDisplay.textContent = 'All Categories';
+                if (hasCategories) {
+                    clearBtn.classList.add('show'); // Show if hash has categories
+                } else {
+                    clearBtn.classList.remove('show'); // Hide if no categories anywhere
+                }
             } else if (selectedCategories.length === 1) {
                 categoryDisplay.textContent = selectedCategories[0];
+                clearBtn.classList.add('show'); // Show clear button
             } else {
                 categoryDisplay.textContent = `${selectedCategories.length} Categories`;
+                clearBtn.classList.add('show'); // Show clear button
             }
             
             // Repopulate industry dropdown with filtered industries
@@ -2662,6 +2741,26 @@
             });
             
             document.getElementById('industry').addEventListener('change', handleIndustryChange);
+            
+            // Clear categories button functionality
+            document.getElementById('clearCategoriesBtn').addEventListener('click', function() {
+                // Uncheck all category checkboxes
+                document.querySelectorAll('#categoryPopup input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Clear selected categories array
+                selectedCategories = [];
+                
+                // Update category display
+                document.getElementById('categoryDisplay').textContent = 'All Categories';
+                
+                // Reset industry dropdown to show all industries
+                populateIndustryDropdown();
+                
+                // Trigger data update
+                handleCategoryChange();
+            });
             
             // Close category popup when clicking outside
             document.addEventListener('click', function(event) {
