@@ -14,6 +14,7 @@
 <a href="../footprint/calculation.html">Impact Calculation</a>
 <a href="../footprint/sector_purchase_impacts.html">Sector Purchase Impacts</a>
 <a href="../footprint/sector_scopes.html">Sector Scopes</a>
+<a href="../../io/charts/bubble/#state=AL">Impact Bubbles</a>
 
 <div class="local" style="display:none">
 <b>Needs Work</b><br>
