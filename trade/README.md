@@ -16,12 +16,16 @@ IN PROGRESS: [We're generating CSV with BEA+Exiobase data](../../exiobase/tradef
 
 [View table names as csv files](https://github.com/ModelEarth/trade-data/tree/main/year/2019) and [Trade Flow by Country and State](../state/)
 
-**table names**
+**CSV-to-SQL table names**
 [factor](https://github.com/ModelEarth/trade-data/blob/main/year/2019/factor.csv) (includes factor\_id<!-- and flow\_id-->)  
 [industry](https://github.com/ModelEarth/trade-data/blob/main/year/2019/industry.csv) (5-char sectors) 
 trade (trade_id, year, region1, region2, industry1, industry2, amount)  
 trade_factor  
-trade_factor_lg - For local processing. 
+
+**Supporting local file**
+trade_factor_lg - For local processing (too large to send to github)
+
+**Redundant** (For reports but not needed in SQL)
 [trade_impact](../footprint/)  
 trade_resource
 trade_material  
