@@ -1,6 +1,7 @@
 # US State Reports<!-- ScoreCards -->
 
-View reports via the links to the left. We have a [new chord and sankey display](../footprint/sector_supply_impacts.html).  
+View state reports via the links to the left.  
+We have a [new chord and sankey display](../footprint/sector_supply_impacts.html) and an updated [impact bubble chart](../../io/charts/bubble/#state=AL).   
 A new CO2e column has been added to the [commodities report](../footprint/commodities.html).
 
 <!--
@@ -20,7 +21,7 @@ We also have a slower python pre-processed report at <a href="/data-pipeline/res
 <a href="https://colab.research.google.com/drive/1CYKNTnLiZ_PbP5WS_dMVtYyYDIAFwzq8?usp=sharing" target="useeio_colab">Generate Supabase USEEIO (CoLab)</a> - Upcoming python to migrate for SQL tables
 -->
 
-<a href="/profile/trade/">Exiobase International Trade Flow SQL</a> - Parallel work on international trade reports
+<a href="../../exiobase/tradeflow/">Exiobase International Trade Flow .CSV files</a> - Parallel work on international trade reports
 
 
 ## US State Data
