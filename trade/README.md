@@ -1,17 +1,26 @@
 [Active Projects](../../projects/)
-# Trade Flow (CSV and SQL)
+# Trade Profiles (CSV and SQL)
 
-We're using [Claude Code CLI to create .CSV files](../../exiobase/tradeflow/) for use in [comparison frontends](../../comparison/), and Azure PostgreSQL annual database instances with data from Exiobase similar to [generate\_import\_factors.py](https://github.com/ModelEarth/USEEIO/tree/master/import_emission_factors). 
+We're using UN Comtrade [Exiobase](https://exiobase.eu) trade factors and US Bureau of Economic Analysis (BEA) data with Claude Code CLI to create Python that outputs [Exiobase .CSV files](../../exiobase/tradeflow/) and US state commodity analysis .CSV files from our [BEA+Exiobase data prep python](../../exiobase/tradeflow/bea/).
 
 <!--Each country-year database instance will represent a country and year from Exiobase.-->
 
-**View Report:** [Created from trade_impact data structure below](../footprint/) and [states](../footprint/#state=all)
+**Dashboards and Reports**  
+Pitch in to help us refine and optimize our interactive reports:  
 
-IN PROGRESS: [We're generating CSV with BEA+Exiobase data](../../exiobase/tradeflow/bea/) for [US States from Matrix table files](/io/about/) with new [50 State USEEIO json](https://github.com/ModelEarth/useeio-json/)
+- [Country Trade Data](../footprint/)  
+- [US States - Summary Totals](../footprint/#state=all)  
+- [BEA Dashboard](../../trade-data/bea-dashboard/)  
+- [Import Dependency & Supply Chain Risk Dashboard](../../trade-data/year/2019/US/imports/import-dependency-dashboard.html)  
+- [Comparison Frontends](../../comparison/)
+
+Also see [IO Charts](../../io/charts/) using [US States from Matrix table files](/io/about/) with new [50 State USEEIO json](https://github.com/ModelEarth/useeio-json/)
+
+Exiobase+BEA processing vibe coded with guidance from the US EPA's [generate\_import\_factors.py](https://github.com/ModelEarth/USEEIO/tree/master/import_emission_factors). 
 
 ## Tables: trade, factor, industry 
 
-[Exiobase Overview](../../exiobase/tradeflow/) - Pull for Exiobase for domestic, imports, exports
+[Exiobase Overview](../../exiobase/tradeflow/) - Pulled from Exiobase for domestic, imports, exports
 [BEA + Exiobase Overview](../../exiobase/tradeflow/bea/) - Pull for US state-to-state
 
 [View table names as csv files](https://github.com/ModelEarth/trade-data/tree/main/year/2019) and [Trade Flow by Country and State](../state/)
