@@ -33,8 +33,8 @@
 }
 
 .item-name {
-  font-size: 1.2em;
-  font-weight: bold;
+  font-size: 1.1em;
+  font-weight: 600;
 }
 
 .thick-line {
@@ -136,14 +136,19 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .nutrition-section {
-    margin: 2px 0;
+  font-size: 0.9em;
 }
 
 .menu-label {
-    margin: 20px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
+  position: relative;
+  margin: 12px 0;
+  padding: 0;
+  border: none;
+  display: block;           /* stack vertically */
+  width: 100%;              /* occupy full row */
+  clear: both;              /* stop float wrapping */
 }
+
 
 .menu-label h4 {
     margin: 0 0 10px 0;
@@ -347,3 +352,95 @@ input[type=number]::-webkit-outer-spin-button {
 .dark #product-container th {
   background-color: #333;
 }
+
+/* ────────────────────────────────
+   Collapsible Menu Enhancements
+   ──────────────────────────────── */
+   .collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(180deg, #fafafa 0%, #f1f1f1 100%);
+    padding: 14px 28px;             /* increased side padding */
+    margin: 10px 0;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #222;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-width: 550px;               /* ✅ increased width */
+    width: 95%;                     /* ✅ nearly full width */
+    box-sizing: border-box;
+  }
+
+  .collapsible-header .header-left {
+    flex: 1;
+    text-align: left;
+    padding-right: 10px;            /* ✅ space between name and calories */
+    word-break: break-word;         /* ✅ handles long item names nicely */
+  }
+  
+  .collapsible-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.95em;
+    white-space: nowrap;
+  }
+  
+  .collapsible-header .calories-label {
+    color: #444;
+    font-weight: 600;
+    font-size: 0.95em;
+  }
+  
+  .collapsible-header:hover {
+    background-color: #f7f7f7;
+    transform: scale(1.01);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .arrow {
+    transition: transform 0.3s ease;
+    font-size: 14px;
+  }
+  
+  .arrow.rotate {
+    transform: rotate(90deg);
+  }
+  
+  .collapsible-content {
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 10px;
+    background-color: #fff;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+  
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .collapsible-header + .collapsible-content {
+    margin-top: 0;
+  }
+
+  .collapsible-header.active {
+    background-color: #e8f4ff;
+    border-color: #80bfff;
+  }
+  
+  .collapsible-content.open {
+    max-height: 1000px; /* big enough for full label */
+    opacity: 1;
+    padding: 10px;
+  }
+  
