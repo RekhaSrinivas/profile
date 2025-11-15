@@ -380,9 +380,51 @@ function renderMenuLabels() {
         menuItems.forEach((item, idx) => {
             const itemDiv = document.createElement("div");
             itemDiv.classList.add("menu-label");
-            itemDiv.appendChild(renderNutritionLabel(item.profileObject, item.quantity, false, idx));
+          
+            // Create collapsible header
+            const header = document.createElement("div");
+            header.classList.add("collapsible-header");
+
+    // Extract calories value (fallback to 0 if not found)
+    const caloriesSection = item.profileObject.sections.find(s => s.name.toLowerCase().includes("calories"));
+    const caloriesValue = caloriesSection ? Math.round(caloriesSection.value) : 0;
+
+    header.innerHTML = `
+    <div class="header-left">
+    <span class="item-title">${item.profileObject.itemName}</span>
+    </div>
+    <div class="header-right">
+    <span class="calories-label">${caloriesValue} kcal</span>
+    <span class="arrow">▶</span>
+    </div>
+    `;
+          
+            // Create collapsible content
+            const content = document.createElement("div");
+            content.classList.add("collapsible-content");
+            content.appendChild(renderNutritionLabel(item.profileObject, item.quantity, false, idx));
+          
+            // Click toggle behavior
+            header.addEventListener("click", () => {
+                const arrow = header.querySelector(".arrow");
+                const expanded = content.classList.contains("open");
+                content.classList.toggle("open", !expanded);
+                header.classList.toggle("active", !expanded);
+                arrow.classList.toggle("rotate", !expanded);
+            });
+            
+          
+           
+          
+            itemDiv.appendChild(header);
+            itemDiv.appendChild(content);
             allItemsContainer.appendChild(itemDiv);
-        });
+            if (idx === menuItems.length - 1) {
+                content.style.display = "block";
+                header.querySelector(".arrow").classList.add("rotate");
+            }
+          });
+          
 
         // Add the container with all items to the main container
         if (menuItems.length > 0) {
@@ -394,9 +436,28 @@ function renderMenuLabels() {
             input.onchange = function () {
                 const idx = +input.dataset.index;
                 menuItems[idx].quantity = Math.max(1, parseInt(input.value) || 1);
-                renderMenuLabels();
-            };
-        });
+              
+                //Update only this item’s nutrition label (not all)
+                const parentContent = input.closest(".collapsible-content");
+                if (parentContent) {
+                  parentContent.innerHTML = "";
+                  parentContent.appendChild(renderNutritionLabel(menuItems[idx].profileObject, menuItems[idx].quantity, false, idx));
+                }
+              
+                //Update header calories immediately
+                updateHeaderCalories();
+              
+                //Update the meal total (aggregate)
+                updateAggregateProfile();
+                const aggContainer = document.querySelector(".aggregate");
+                if (aggContainer) {
+                  aggContainer.innerHTML = "";
+                  aggContainer.appendChild(renderNutritionLabel(aggregateProfile, 1, true));
+                }
+              };
+              
+          });
+          
 
         container.querySelectorAll(".remove-item-btn").forEach(button => {
             button.onclick = function () {
@@ -480,6 +541,21 @@ function renderNutritionLabel(profileObject, quantity = 1, isAggregate = false, 
 
     return div;
 }
+
+function updateHeaderCalories() {
+    const headers = document.querySelectorAll(".collapsible-header");
+    headers.forEach((header, idx) => {
+      const caloriesSection = menuItems[idx]?.profileObject.sections.find(s =>
+        s.name.toLowerCase().includes("calories")
+      );
+      if (caloriesSection) {
+        const totalCalories = Math.round(caloriesSection.value * menuItems[idx].quantity);
+        const calLabel = header.querySelector(".calories-label");
+        if (calLabel) calLabel.textContent = `${totalCalories} kcal`;
+      }
+    });
+  }
+  
 
 function getUnit(nutrientName) {
     const name = nutrientName.toLowerCase();
