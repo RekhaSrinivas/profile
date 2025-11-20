@@ -3,6 +3,14 @@
 
 let menuItems = []; // { profileObject, quantity }
 let aggregateProfile = {};
+
+// Load js-yaml if missing
+if (typeof jsyaml === "undefined") {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js";
+    document.head.appendChild(s);
+}
+
 let searchResults = []; // Store current search results
 let hasSampleItem = false; // Track if sample item is present
 
