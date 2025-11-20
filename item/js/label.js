@@ -30,53 +30,209 @@ function loadMenu() {
 }
 
 function loadProductList() {
-    const csvUrl = "https://raw.githubusercontent.com/Sirishaupadhyayula/products-data/refs/heads/main/IN.csv";
     const container = document.getElementById("product-container");
 
     if (container) {
-        container.innerHTML = "<h3>Loading products...</h3>";
+        container.innerHTML = `
+            <h3>Select Product Category:</h3>
+            <div id="category-selector" style="margin-bottom: 20px;">
+                <select id="product-category" style="width: 300px; padding: 8px; font-size: 14px;">
+                    <option value="">-- Choose a category --</option>
+                </select>
+            </div>
+            <div id="product-list-container"></div>
+            <div id="product-detail-container"></div>
+        `;
 
-        fetch(csvUrl)
-            .then(response => response.text())
-            .then(csvText => {
-                const lines = csvText.split("\n");
-                const headers = parseCSVLine(lines[0]);
+        // Load categories
+        loadProductCategories();
+    }
+}
 
-                container.innerHTML = "<h3>Product List:</h3>";
+function loadProductCategories() {
+    const categories = [
+        "Cement", "Flat_Glass_Panes", "Cement_Board", "Ready_Mix", "Steel",
+        "Gypsum_Board", "Paint_By_Mass", "Brick", "Carpet", "Aluminium",
+        "Coil_Steel", "Dampproofing_And_Waterproofing", "Elevators",
+        "Fiber-cement_Siding", "Flowable_Concrete_Fill", "Food_Beverage",
+        "Grouting", "Insulated_Wall_Panels", "Mechanical_Insulation",
+        "Metal_Doors_and_Frames", "Other_Flooring", "Paint_By_Area",
+        "Processed_Non-insulating_Glass_Panes", "Resilient_Flooring",
+        "Supplementary_Cementitious_Materials", "Utility_Piping", "Water_Closets"
+    ];
 
-                const table = document.createElement("table");
-                table.style.width = "100%";
-                table.style.borderCollapse = "collapse";
+    const select = document.getElementById("product-category");
+    categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category.replace(/_/g, " ");
+        select.appendChild(option);
+    });
 
-                const headerRow = document.createElement("tr");
-                headers.forEach(header => {
-                    const th = document.createElement("th");
-                    th.textContent = header;
-                    headerRow.appendChild(th);
-                });
-                table.appendChild(headerRow);
+    select.addEventListener("change", function() {
+        if (this.value) {
+            loadProductsFromCategory(this.value);
+        } else {
+            document.getElementById("product-list-container").innerHTML = "";
+            document.getElementById("product-detail-container").innerHTML = "";
+        }
+    });
+}
 
-                for (let i = 1; i < lines.length; i++) {
-                    if (lines[i].trim()) {
-                        const values = parseCSVLine(lines[i]);
-                        const row = document.createElement("tr");
+async function loadProductsFromCategory(category) {
+    const listContainer = document.getElementById("product-list-container");
+    const detailContainer = document.getElementById("product-detail-container");
 
-                        values.forEach(value => {
-                            const td = document.createElement("td");
-                            td.textContent = value;
-                            row.appendChild(td);
-                        });
+    listContainer.innerHTML = "<p>Loading products...</p>";
+    detailContainer.innerHTML = "";
 
-                        table.appendChild(row);
-                    }
+    try {
+        // Fetch the CSV to get product IDs and names for this category
+        const csvUrl = "https://raw.githubusercontent.com/ModelEarth/products-data/main/IN.csv";
+        const response = await fetch(csvUrl);
+        const csvText = await response.text();
+
+        // Parse CSV and filter by category
+        const lines = csvText.split("\n");
+        const products = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim()) {
+                const values = parseCSVLine(lines[i]);
+                const productName = values[0];
+                const productId = values[1];
+
+                if (productName && productId) {
+                    products.push({ name: productName, id: productId });
                 }
+            }
+        }
 
-                container.appendChild(table);
-            })
-            .catch(error => {
-                console.log("Error fetching products CSV:", error);
-                container.innerHTML = "<p>Error loading products. Please try again later.</p>";
+        if (products.length === 0) {
+            listContainer.innerHTML = "<p>No products found in this category.</p>";
+            return;
+        }
+
+        // Display product list
+        listContainer.innerHTML = `<h4>Products in ${category.replace(/_/g, " ")}:</h4>`;
+        const productList = document.createElement("div");
+        productList.style.marginBottom = "20px";
+
+        products.slice(0, 10).forEach(product => {
+            const productBtn = document.createElement("button");
+            productBtn.textContent = product.name;
+            productBtn.style.display = "block";
+            productBtn.style.margin = "5px 0";
+            productBtn.style.padding = "8px 12px";
+            productBtn.style.cursor = "pointer";
+            productBtn.style.width = "100%";
+            productBtn.style.maxWidth = "600px";
+            productBtn.style.textAlign = "left";
+
+            productBtn.addEventListener("click", () => {
+                loadProductYAML(category, product);
             });
+
+            productList.appendChild(productBtn);
+        });
+
+        listContainer.appendChild(productList);
+
+    } catch (error) {
+        console.error("Error loading products:", error);
+        listContainer.innerHTML = "<p>Error loading products. Please try again.</p>";
+    }
+}
+
+async function loadProductYAML(category, product) {
+    const detailContainer = document.getElementById("product-detail-container");
+    detailContainer.innerHTML = "<p>Loading product details...</p>";
+
+    try {
+        // First, get list of YAML files in the category
+        const apiUrl = `https://api.github.com/repos/ModelEarth/products-data/contents/IN/${category}`;
+        const response = await fetch(apiUrl);
+        const files = await response.json();
+
+        if (!files || files.length === 0) {
+            detailContainer.innerHTML = "<p>No YAML files found for this category.</p>";
+            return;
+        }
+
+        // Load the first YAML file as an example
+        const yamlFile = files.find(f => f.name.endsWith('.yaml'));
+        if (!yamlFile) {
+            detailContainer.innerHTML = "<p>No YAML files found.</p>";
+            return;
+        }
+
+        const yamlUrl = yamlFile.download_url;
+        const yamlResponse = await fetch(yamlUrl);
+        const yamlText = await yamlResponse.text();
+
+        // Parse YAML and display
+        displayProductEPD(yamlText, product.name);
+
+    } catch (error) {
+        console.error("Error loading YAML:", error);
+        detailContainer.innerHTML = "<p>Error loading product details. Please try again.</p>";
+    }
+}
+
+function displayProductEPD(yamlText, productName) {
+    const detailContainer = document.getElementById("product-detail-container");
+
+    try {
+        // Parse YAML using js-yaml library
+        const data = jsyaml.load(yamlText);
+
+        // Create EPD Label
+        const epdLabel = document.createElement('div');
+        epdLabel.className = 'nutrition-label';
+        epdLabel.style.maxWidth = '400px';
+        epdLabel.style.border = '4px solid #000';
+        epdLabel.style.padding = '10px';
+        epdLabel.style.fontFamily = 'helvetica, arial, sans-serif';
+
+        // Extract key data
+        const name = data.name || productName;
+        const gwp = data.gwp || data.gwp_per_kg || 'N/A';
+        const declaredUnit = data.declared_unit || data.category?.declared_unit || '1 unit';
+        const manufacturer = data.manufacturer?.name || 'Unknown';
+        const description = data.description || '';
+
+        epdLabel.innerHTML = `
+            <div style="font-size: 11px; margin-bottom: 5px; border-bottom: 1px solid #333;">Environmental Product Declaration</div>
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; border-bottom: 6px solid #333; padding-bottom: 5px;">
+                ${name}
+            </div>
+            <div style="font-size: 12px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">
+                <strong>Amount Per:</strong> ${declaredUnit}
+            </div>
+            <div style="font-size: 13px; padding: 5px 0; border-bottom: 1px solid #333;">
+                <strong>Global Warming Potential</strong> (kg CO₂ eq)
+                <span style="float: right; font-weight: bold;">${typeof gwp === 'number' ? gwp.toFixed(2) : gwp}</span>
+            </div>
+            <div style="font-size: 12px; padding: 5px 0; border-bottom: 1px solid #333;">
+                <strong>Manufacturer:</strong> ${manufacturer}
+            </div>
+            ${description ? `<div style="font-size: 11px; padding: 5px 0; margin-top: 10px; max-height: 150px; overflow-y: auto;">${description.substring(0, 300)}${description.length > 300 ? '...' : ''}</div>` : ''}
+            <button onclick="document.getElementById('raw-yaml').style.display = document.getElementById('raw-yaml').style.display === 'none' ? 'block' : 'none'" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">
+                Toggle Raw Data
+            </button>
+            <pre id="raw-yaml" style="display: none; background: #f5f5f5; padding: 10px; margin-top: 10px; font-size: 10px; overflow-x: auto; max-height: 300px;">${yamlText}</pre>
+        `;
+
+        detailContainer.innerHTML = '<h3>Product Environmental Impact</h3>';
+        detailContainer.appendChild(epdLabel);
+
+    } catch (error) {
+        console.error("Error parsing YAML:", error);
+        detailContainer.innerHTML = `
+            <h3>Product Details: ${productName}</h3>
+            <p>Error parsing product data. Showing raw YAML:</p>
+            <pre style="background: #f5f5f5; padding: 15px; overflow-x: auto; max-height: 400px;">${yamlText}</pre>
+        `;
     }
 }
 
