@@ -613,14 +613,19 @@ function renderMenuLabels() {
     const caloriesValue = caloriesSection ? Math.round(caloriesSection.value) : 0;
 
     header.innerHTML = `
-    <div class="header-left">
+  <div class="header-left">
     <span class="item-title">${item.profileObject.itemName}</span>
+  </div>
+  <div class="header-right">
+    <div class="quantity-controls">
+      <input class="quantity-input" type="number" value="${item.quantity}" min="1" step="1" data-index="${idx}">
+      <button class="remove-item-btn" data-idx="${idx}">X</button>
     </div>
-    <div class="header-right">
     <span class="calories-label">${caloriesValue} kcal</span>
-    <span class="arrow">▶</span>
-    </div>
-    `;
+    <span class="arrow">▼</span>
+  </div>
+`;
+
           
             // Create collapsible content
             const content = document.createElement("div");
@@ -628,24 +633,41 @@ function renderMenuLabels() {
             content.appendChild(renderNutritionLabel(item.profileObject, item.quantity, false, idx));
           
             // Click toggle behavior
-            header.addEventListener("click", () => {
+            header.addEventListener("click", (e) => {
+                // Prevent clicks on quantity input or remove button from toggling collapse
+                if (e.target.closest(".quantity-input") || e.target.closest(".remove-item-btn")) return;
+            
                 const arrow = header.querySelector(".arrow");
                 const expanded = content.classList.contains("open");
-                content.classList.toggle("open", !expanded);
-                header.classList.toggle("active", !expanded);
-                arrow.classList.toggle("rotate", !expanded);
+            
+                if (expanded) {
+                    content.classList.remove("open");
+                    content.style.display = "none";
+                    arrow.textContent = "▼";
+                } else {
+                    content.classList.add("open");
+                    content.style.display = "block";
+                    arrow.textContent = "▲";
+                }
             });
             
-          
-           
+              
+            
           
             itemDiv.appendChild(header);
             itemDiv.appendChild(content);
             allItemsContainer.appendChild(itemDiv);
             if (idx === menuItems.length - 1) {
+                // only expand the newly added item; keep others closed
+                content.classList.add("open");
                 content.style.display = "block";
-                header.querySelector(".arrow").classList.add("rotate");
-            }
+                header.querySelector(".arrow").textContent = "▲";
+              } else {
+                // keep others collapsed
+                content.classList.remove("open");
+                content.style.display = "none";
+                header.querySelector(".arrow").textContent = "▼";
+              }
           });
           
 
@@ -705,18 +727,64 @@ function removeFromMenu(index) {
 function renderNutritionLabel(profileObject, quantity = 1, isAggregate = false, itemIndex = null) {
     const div = document.createElement("div");
     div.className = isAggregate ? "nutrition-label aggregate" : "nutrition-label";
+  
+    // Header section with item name only — no quantity or X button
+    div.innerHTML = `
+      <div class="item-label-header">
+        <div class="item-name">${profileObject.itemName}</div>
+      </div>
+      <hr class="thick-line">
+      <div class="serving-size">Amount Per Serving</div>
+      <hr class="thin-line">
+    `;
+  
+    profileObject.sections.forEach(section => {
+      const val = (section.value * quantity);
+      const unit = getUnit(section.name);
+      const formattedVal = formatValue(val, section.name);
+      const dailyValue = section.dailyValue ? Math.round(section.dailyValue * quantity) : null;
+  
+      const sectionDiv = document.createElement("div");
+      sectionDiv.className = "nutrition-section";
+      sectionDiv.innerHTML = `
+        <div class="section-title">
+          <span><strong>${section.name}</strong> <span class="value">${formattedVal}${unit}</span></span>
+          <span class="daily-value">${dailyValue ? dailyValue + '%' : ''}</span>
+        </div>
+      `;
+  
+      if (section.subsections) {
+        section.subsections.forEach(subsection => {
+          const subVal = (subsection.value * quantity);
+          const subUnit = getUnit(subsection.name);
+          const subFormattedVal = formatValue(subVal, subsection.name);
+          const subDailyValue = subsection.dailyValue ? Math.round(subsection.dailyValue * quantity) : null;
+  
+          const subSectionDiv = document.createElement("div");
+          subSectionDiv.className = "sub-section";
+          subSectionDiv.innerHTML = `
+            <span>${subsection.name}</span>
+            <span class="value">${subFormattedVal}${subUnit}</span>
+            <span class="daily-value">${subDailyValue ? subDailyValue + '%' : ''}</span>
+          `;
+          sectionDiv.appendChild(subSectionDiv);
+        });
+      }
+  
+      div.appendChild(sectionDiv);
+      div.appendChild(document.createElement('hr')).classList.add('thin-line');
+    });
+  
+    return div;
+  }
+  
+/*
+function renderNutritionLabel(profileObject, quantity = 1, isAggregate = false, itemIndex = null) {
+    const div = document.createElement("div");
+    div.className = isAggregate ? "nutrition-label aggregate" : "nutrition-label";
 
     // Add nutrition facts header
     div.innerHTML = `
-        <div class="nutrition-facts-header">
-            ${!isAggregate ? `
-                <div class="quantity-controls">
-                    <input class="quantity-input" type="number" value="${quantity}" min="1" step="1" data-index="${itemIndex}" style="width:45px">
-                </div>
-            ` : ''}
-            <!--${isAggregate ? 'Nutrition Facts' : 'Nutrition Facts'}-->
-            ${!isAggregate ? `<button class="remove-item-btn" data-idx="${itemIndex}">X</button>` : ''}
-        </div>
         <div class="item-label-header">
             <div class="item-name">${profileObject.itemName}</div>
         </div>
@@ -764,7 +832,7 @@ function renderNutritionLabel(profileObject, quantity = 1, isAggregate = false, 
 
     return div;
 }
-
+*/
 function updateHeaderCalories() {
     const headers = document.querySelectorAll(".collapsible-header");
     headers.forEach((header, idx) => {
