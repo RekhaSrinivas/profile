@@ -16,6 +16,15 @@ let hasSampleItem = false; // Track if sample item is present
 
 document.addEventListener("DOMContentLoaded", loadMenu);
 
+function parseNumeric(value) {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+        const m = value.match(/-?\d+(\.\d+)?/);
+        return m ? parseFloat(m[0]) : NaN;
+    }
+    return NaN;
+}
+
 // function loadMenu() {
 //     let hash = getUrlHash();
 
@@ -297,10 +306,110 @@ async function loadYAMLProfile(region, category, file) {
     const profile = createProfileObject(data);
 
     const container = document.getElementById("product-label");
+    if (!container) return;
+
+    // Clear old content and render the main product impact label
     container.innerHTML = "";
     container.appendChild(renderNutritionLabel(profile, 1, false));
+
+    // travel-distance calculator
+    setupTravelDistanceCalculator(data, container);
 }
 
+// Travel distance calculator based on the YAML spec in products.md
+function setupTravelDistanceCalculator(epdData, parentEl) {
+    const container = parentEl || document.getElementById("product-label");
+    if (!container) return;
+
+    // Pull values from the EPD YAML
+    const baseGwp = parseNumeric(epdData.gwp); // e.g., "468 kgCO2e"
+    const massPerDeclaredUnit = parseNumeric(epdData.mass_per_declared_unit); // e.g., "357.43 kg"
+    const defaultDistance = epdData.category
+        ? parseNumeric(epdData.category.default_distance) // e.g., "1647.968 km"
+        : NaN;
+
+    // If any core field is missing, skip the calculator
+    if (!isFinite(baseGwp) || !isFinite(massPerDeclaredUnit) || !isFinite(defaultDistance)) {
+        return;
+    }
+
+    const EMISSION_FACTOR = 0.062; // kgCO2e / ton-km (truck, unspecified)
+
+    // Wrapper for the calculator UI
+    const wrapper = document.createElement("div");
+    wrapper.id = "travel-impact-wrapper";
+    wrapper.style.marginTop = "1em";
+    wrapper.style.padding = "10px";
+    wrapper.style.border = "1px solid #ccc";
+    wrapper.style.borderRadius = "4px";
+    wrapper.style.background = "#f9f9f9";
+    wrapper.style.fontSize = "13px";
+
+    wrapper.innerHTML = `
+        <div style="font-weight:bold; margin-bottom:4px;">
+            Transportation to Site (A4)
+        </div>
+
+        <label style="display:block; margin-bottom:4px;">
+            Travel distance to site (km):
+            <input type="number"
+                   id="travel-distance-input"
+                   min="0"
+                   step="10"
+                   style="width:120px; margin-left:4px;">
+        </label>
+
+        <div id="travel-impact-results" style="margin-top:4px;"></div>
+
+        <div style="font-size:11px; color:#555; margin-top:6px;">
+            Uses <code>gwp</code>, <code>mass_per_declared_unit</code>,
+            and <code>category.default_distance</code> from the product YAML.
+            Emission factor: 0.062 kgCO₂e/ton-km.
+        </div>
+    `;
+
+    container.appendChild(wrapper);
+
+    const distanceInput = wrapper.querySelector("#travel-distance-input");
+    const resultsDiv = wrapper.querySelector("#travel-impact-results");
+
+    function formatKg(v) {
+        return v.toFixed(1);
+    }
+
+    function recalc(distanceKm) {
+        const d = Math.max(0, distanceKm || 0);
+
+        // Default and actual A4 transport impacts
+        const defaultA4 = (defaultDistance * massPerDeclaredUnit * EMISSION_FACTOR) / 1000;
+        const actualA4 = (d * massPerDeclaredUnit * EMISSION_FACTOR) / 1000;
+
+        const adjustedGwp = baseGwp + (actualA4 - defaultA4);
+        const savings = defaultA4 - actualA4;
+
+        resultsDiv.innerHTML = `
+            <div>Base product GWP (A1–A3): <strong>${formatKg(baseGwp)} kgCO₂e</strong></div>
+            <div>Default transport (${defaultDistance.toFixed(0)} km): <strong>${formatKg(defaultA4)} kgCO₂e</strong></div>
+            <div>Actual transport (${d.toFixed(0)} km): <strong>${formatKg(actualA4)} kgCO₂e</strong></div>
+            <div style="margin-top:4px;">
+                Adjusted total (A1–A3 + A4): <strong>${formatKg(adjustedGwp)} kgCO₂e</strong>
+            </div>
+            <div>
+                ${savings >= 0 ? "Savings" : "Increase"} vs. default:
+                <strong>${formatKg(Math.abs(savings))} kgCO₂e</strong>
+            </div>
+        `;
+    }
+
+    // Initialize with the category default distance from YAML
+    distanceInput.value = isFinite(defaultDistance) ? defaultDistance.toFixed(0) : "0";
+    recalc(parseFloat(distanceInput.value));
+
+    distanceInput.addEventListener("input", function () {
+        const v = parseFloat(distanceInput.value);
+        if (!isNaN(v)) recalc(v);
+    });
+}
 
 async function fetchJSON(url) {
     const r = await fetch(url);
